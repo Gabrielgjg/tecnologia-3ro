@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ficha · Sesión 1 — ¿Qué es el diseño gráfico?</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#faf9f5;
+    --paper-line:#dedad0;
+    --ink:#1b1b1d;
+    --ink-soft:#5b5b5e;
+    --cyan:#00aeef;
+    --magenta:#ec1e79;
+    --yellow:#ffd400;
+    --key:#17181a;
+    --radius:2px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Space Grotesk', system-ui, sans-serif;
+    line-height:1.55;
+  }
+  .mono{font-family:'JetBrains Mono', monospace; letter-spacing:0.02em;}
+
+  /* ---------- Barra superior ---------- */
+  .topbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:1rem;
+    padding:0.7rem 1.5rem;
+    border-bottom:1px solid var(--paper-line);
+    font-size:0.85rem;
+  }
+  .topbar a{color:var(--ink-soft); text-decoration:none;}
+  .topbar a:hover{color:var(--ink);}
+  .topbar .who{color:var(--ink-soft);}
+  .topbar .who strong{color:var(--ink); font-weight:600;}
+
+  /* ---------- Contenedor de la ficha ---------- */
+  .sheet{
+    max-width:720px;
+    margin:0 auto;
+    padding:2.8rem 1.5rem 4rem;
+  }
+  .eyebrow{
+    font-size:0.72rem;
+    color:var(--ink-soft);
+    margin:0 0 0.4rem;
+  }
+  h1{
+    margin:0 0 1.8rem;
+    font-size:clamp(1.7rem, 4vw, 2.3rem);
+    font-weight:700;
+    letter-spacing:-0.01em;
+  }
+
+  /* ---------- Datos del alumno ---------- */
+  .datos{
+    display:grid;
+    grid-template-columns:2fr 1fr 1fr;
+    gap:1rem;
+    padding-bottom:1.8rem;
+    margin-bottom:2rem;
+    border-bottom:1px solid var(--paper-line);
+  }
+  .datos .field label, .block .field label{
+    display:block;
+    font-size:0.72rem;
+    color:var(--ink-soft);
+    margin-bottom:0.3rem;
+  }
+  input[type="text"], input[type="date"], textarea{
+    width:100%;
+    font:inherit;
+    font-size:0.95rem;
+    color:var(--ink);
+    background:#fff;
+    border:1px solid var(--paper-line);
+    border-radius:var(--radius);
+    padding:0.55rem 0.65rem;
+  }
+  textarea{resize:vertical; min-height:5.5rem;}
+  input:focus-visible, textarea:focus-visible{
+    outline:2px solid var(--cyan);
+    outline-offset:1px;
+  }
+
+  /* ---------- Bloques de instrucción ---------- */
+  .block{
+    position:relative;
+    padding-left:1.2rem;
+    margin-bottom:2.4rem;
+    border-left:3px solid var(--tab, var(--cyan));
+  }
+  .block .num{
+    font-size:0.72rem;
+    color:var(--ink-soft);
+    margin:0 0 0.35rem;
+  }
+  .block p.prompt{
+    margin:0 0 0.9rem;
+    font-size:1rem;
+  }
+  .block .field{margin-bottom:0.9rem;}
+
+  table.objetos{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:0.4rem;
+  }
+  table.objetos th{
+    text-align:left;
+    font-size:0.72rem;
+    color:var(--ink-soft);
+    font-weight:500;
+    padding:0 0.5rem 0.4rem 0;
+  }
+  table.objetos td{
+    padding:0.25rem 0.5rem 0.25rem 0;
+    vertical-align:top;
+  }
+  table.objetos input{width:100%;}
+  table.objetos td.idx{
+    width:1.6rem;
+    padding-top:0.7rem;
+    color:var(--ink-soft);
+    font-size:0.85rem;
+  }
+
+  .idea-linea{
+    display:flex;
+    align-items:center;
+    gap:0.5rem;
+    flex-wrap:wrap;
+    font-size:1rem;
+  }
+  .idea-linea input{flex:1; min-width:220px;}
+
+  /* ---------- Acciones ---------- */
+  .actions{
+    display:flex;
+    gap:0.8rem;
+    margin-top:1rem;
+  }
+  .actions button{
+    padding:0.75rem 1.3rem;
+    border-radius:var(--radius);
+    font:inherit;
+    font-size:0.9rem;
+    font-weight:600;
+    cursor:pointer;
+    border:1px solid var(--ink);
+  }
+  .actions .primary{background:var(--ink); color:#fff;}
+  .actions .primary:hover{background:var(--magenta); border-color:var(--magenta);}
+  .actions button:focus-visible{outline:2px solid var(--cyan); outline-offset:2px;}
+
+  footer{
+    text-align:center;
+    font-size:0.78rem;
+    color:var(--ink-soft);
+    padding:1rem 1.5rem 3rem;
+  }
+
+  /* ---------- Impresión / Guardar como PDF ---------- */
+  @media print{
+    .no-print{display:none !important;}
+    body{background:#fff;}
+    .sheet{padding:0.4rem 0.2rem;}
+    .block{break-inside:avoid;}
+    input[type="text"], input[type="date"], textarea{
+      border:none;
+      border-bottom:1px solid var(--ink);
+      border-radius:0;
+      padding:0.3rem 0.1rem;
+    }
+    textarea{min-height:3.6rem;}
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{transition:none !important;}
+  }
+</style>
+</head>
+<body>
+
+  <div class="topbar no-print">
+    <a href="../index.html">&larr; Volver al inicio</a>
+    <span class="who" id="statusText"></span>
+  </div>
+
+  <div class="sheet">
+    <p class="eyebrow mono">Ficha de trabajo — Sesión 1</p>
+    <h1>¿Qué es el diseño gráfico?</h1>
+
+    <div class="datos">
+      <div class="field">
+        <label for="nombre">Nombre</label>
+        <input type="text" id="nombre">
+      </div>
+      <div class="field">
+        <label for="grupo">Grupo</label>
+        <input type="text" id="grupo">
+      </div>
+      <div class="field">
+        <label for="fecha">Fecha</label>
+        <input type="date" id="fecha">
+      </div>
+    </div>
+
+    <div class="block" style="--tab: var(--cyan);">
+      <p class="num mono">01</p>
+      <p class="prompt">Observa las imágenes que tu profesor te muestra al inicio de la clase (un logo, un semáforo, un empaque, una señal, un ícono) y responde: ¿qué tienen en común todas estas imágenes?</p>
+      <div class="field">
+        <textarea aria-label="Respuesta a la pregunta 1"></textarea>
+      </div>
+    </div>
+
+    <div class="block" style="--tab: var(--magenta);">
+      <p class="num mono">02</p>
+      <p class="prompt">Con tu compañero(a), busquen en su mochila, uniforme o salón 3 objetos que tengan diseño gráfico (por ejemplo: una etiqueta, un logo, un empaque, la portada de un cuaderno). Anótenlos aquí y expliquen qué mensaje comunica cada uno.</p>
+      <table class="objetos">
+        <thead>
+          <tr><td></td><th>Objeto encontrado</th><th>¿Qué mensaje comunica?</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="idx">1.</td><td><input type="text" aria-label="Objeto 1"></td><td><input type="text" aria-label="Mensaje del objeto 1"></td></tr>
+          <tr><td class="idx">2.</td><td><input type="text" aria-label="Objeto 2"></td><td><input type="text" aria-label="Mensaje del objeto 2"></td></tr>
+          <tr><td class="idx">3.</td><td><input type="text" aria-label="Objeto 3"></td><td><input type="text" aria-label="Mensaje del objeto 3"></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="block" style="--tab: var(--yellow);">
+      <p class="num mono">03</p>
+      <p class="prompt">Con la información de las actividades anteriores, completa la siguiente idea con tus propias palabras:</p>
+      <div class="idea-linea">
+        <span>El diseño gráfico es</span>
+        <input type="text" aria-label="Completa la idea: el diseño gráfico es...">
+      </div>
+    </div>
+
+    <div class="block" style="--tab: var(--key);">
+      <p class="num mono">Para cerrar</p>
+      <p class="prompt">¿Podríamos vivir un día sin ver ningún diseño gráfico? ¿Por qué?</p>
+      <div class="field">
+        <textarea aria-label="Respuesta de cierre"></textarea>
+      </div>
+    </div>
+
+    <div class="actions no-print">
+      <button type="button" class="primary" id="printBtn">Imprimir / Guardar como PDF</button>
+    </div>
+  </div>
+
+  <footer class="no-print">Tecnología · Diseño Gráfico — Ficha de trabajo</footer>
+
+<script>
+  // Recupera nombre/grupo capturados una vez en la página principal
+  const STORAGE_KEY = "tecnologia_alumno";
+  const nombreInput = document.getElementById("nombre");
+  const grupoInput = document.getElementById("grupo");
+  const fechaInput = document.getElementById("fecha");
+  const statusText = document.getElementById("statusText");
+
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(raw){
+      const alumno = JSON.parse(raw);
+      nombreInput.value = alumno.nombre || "";
+      grupoInput.value = alumno.grupo || "";
+      statusText.innerHTML = `<strong>${alumno.nombre}</strong> · Grupo ${alumno.grupo}`;
+    }
+  }catch(e){ /* sin registro previo: se llena a mano */ }
+
+  // Fecha de hoy por defecto, editable
+  fechaInput.value = new Date().toISOString().split("T")[0];
+
+  document.getElementById("printBtn").addEventListener("click", () => window.print());
+</script>
+
+</body>
+</html>
