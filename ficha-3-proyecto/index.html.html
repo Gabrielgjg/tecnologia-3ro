@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Proyecto: Set de tierras básicas · Tecnología</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#faf9f5;
+    --paper-line:#dedad0;
+    --ink:#1b1b1d;
+    --ink-soft:#5b5b5e;
+    --cyan:#00aeef;
+    --magenta:#ec1e79;
+    --yellow:#ffd400;
+    --key:#17181a;
+    --w:#efe3c2;
+    --u:#1f6fb2;
+    --b:#3a3140;
+    --r:#c8372d;
+    --g:#2f7d4a;
+    --radius:2px;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:'Space Grotesk', system-ui, sans-serif; line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:inherit;}
+  .mono{font-family:'JetBrains Mono', ui-monospace, monospace; letter-spacing:0.02em;}
+  button{font:inherit;}
+  :focus-visible{outline:2px solid var(--cyan); outline-offset:2px;}
+
+  .statusbar{
+    display:flex; align-items:center; justify-content:space-between; gap:1rem;
+    padding:0.7rem 1.5rem; border-bottom:1px solid var(--paper-line); font-size:0.85rem;
+  }
+  .statusbar a{color:var(--ink-soft); text-decoration:none; border:1px solid var(--paper-line); padding:0.3rem 0.75rem; border-radius:var(--radius);}
+  .statusbar a:hover{border-color:var(--ink); color:var(--ink);}
+  .statusbar .who{color:var(--ink-soft);}
+  .statusbar .who strong{color:var(--ink);}
+
+  header.hero{padding:3.5rem 1.5rem 2rem; max-width:1040px; margin:0 auto;}
+  .hero h1{margin:0; font-size:clamp(2rem, 5.5vw, 3.6rem); line-height:1.05; letter-spacing:-0.02em; max-width:16ch;}
+  .hero p.sub{margin:0.9rem 0 0; color:var(--ink-soft); max-width:60ch;}
+
+  .landbar{display:grid; grid-template-columns:repeat(5,1fr); margin-top:2rem; border:1px solid var(--ink); max-width:640px;}
+  .landbar div{height:38px; position:relative;}
+  .landbar span{position:absolute; bottom:4px; left:6px; font-size:0.62rem;}
+  .lw{background:var(--w);} .lw span{color:#6b5a2e;}
+  .lu{background:var(--u);} .lu span{color:#dcecff;}
+  .lb{background:var(--b);} .lb span{color:#e7dff0;}
+  .lr{background:var(--r);} .lr span{color:#ffe3e0;}
+  .lg{background:var(--g);} .lg span{color:#dff5e6;}
+
+  nav.index{
+    position:sticky; top:0; z-index:20; background:var(--paper);
+    border-top:1px solid var(--paper-line); border-bottom:1px solid var(--paper-line);
+  }
+  nav.index ul{list-style:none; margin:0 auto; padding:0 1.5rem; max-width:1040px; display:flex; gap:1.4rem; overflow-x:auto;}
+  nav.index a{display:block; padding:0.8rem 0; text-decoration:none; font-size:0.9rem; color:var(--ink-soft); white-space:nowrap;}
+  nav.index a:hover{color:var(--ink);}
+
+  main{max-width:1040px; margin:0 auto; padding:0 1.5rem 5rem;}
+  section{padding-top:3.2rem;}
+  section > h2{font-size:1.6rem; margin:0 0 0.4rem; letter-spacing:-0.01em;}
+  section > p.lead{margin:0 0 1.6rem; color:var(--ink-soft); max-width:62ch;}
+
+  /* ---------- Progreso ---------- */
+  .progress{display:flex; align-items:center; gap:0.9rem; margin-bottom:1.6rem; font-size:0.85rem; color:var(--ink-soft);}
+  .progress .track{flex:1; max-width:360px; height:8px; background:#fff; border:1px solid var(--ink);}
+  .progress .fill{height:100%; width:0; background:var(--g); transition:width 0.3s ease;}
+
+  /* ---------- Flujograma ---------- */
+  .flow{position:relative; max-width:720px;}
+  .phase{font-size:0.78rem; color:var(--ink-soft); margin:0; padding:0.6rem 0 1rem;}
+  .node{position:relative; margin-left:1.2rem; padding-left:2rem;}
+  .node::before{content:""; position:absolute; left:0; top:0; bottom:0; width:2px; background:var(--ink);}
+  .node.last::before{bottom:auto; height:1.6rem;}
+  .node.first::before{top:1.6rem;}
+  .node .dot{position:absolute; left:-7px; top:1.1rem; width:16px; height:16px; background:var(--paper); border:2px solid var(--ink); border-radius:50%;}
+  .node.done .dot{background:var(--g); border-color:var(--g);}
+  .terminal .pill{display:inline-block; border:2px solid var(--ink); border-radius:999px; padding:0.45rem 1.2rem; margin:0.6rem 0 1rem; font-weight:500;}
+
+  .step{margin:0 0 1rem; background:#fff; border:1px solid var(--paper-line); border-radius:var(--radius); position:relative;}
+  .step .tab{position:absolute; top:-1px; left:1rem; width:28px; height:5px;}
+  .step > button{
+    width:100%; text-align:left; background:none; border:none; cursor:pointer;
+    padding:1rem 1.1rem 0.9rem; display:flex; justify-content:space-between; align-items:flex-start; gap:1rem;
+  }
+  .step > button:hover{background:#fdfcf8;}
+  .step h3{margin:0.2rem 0 0.1rem; font-size:1.08rem;}
+  .step .meta{font-size:0.72rem; color:var(--ink-soft);}
+  .step .count{font-size:0.75rem; color:var(--ink-soft); white-space:nowrap; margin-top:0.3rem;}
+  .step .body{display:none; padding:0 1.1rem 1.1rem; border-top:1px dashed var(--paper-line);}
+  .step.open .body{display:block;}
+  .step .body h4{margin:1rem 0 0.4rem; font-size:0.85rem;}
+  .step .obj{margin:0.9rem 0 0; font-size:0.95rem;}
+  .check{display:flex; gap:0.6rem; align-items:flex-start; padding:0.35rem 0; font-size:0.92rem; cursor:pointer;}
+  .check input{margin-top:0.3rem; width:17px; height:17px; accent-color:var(--g); flex-shrink:0;}
+  .check input:checked + span{color:var(--ink-soft); text-decoration:line-through;}
+  .tip{margin-top:0.9rem; padding:0.7rem 0.9rem; background:#fffbe6; border-left:3px solid var(--yellow); font-size:0.88rem;}
+  .tags{display:flex; flex-wrap:wrap; gap:0.4rem; margin-top:0.8rem;}
+  .tags a{font-size:0.72rem; border:1px solid var(--ink); padding:0.15rem 0.5rem; text-decoration:none; border-radius:var(--radius);}
+  .tags a:hover{background:var(--ink); color:#fff;}
+
+  .decision{display:flex; align-items:center; gap:1rem; margin:0 0 1rem; flex-wrap:wrap;}
+  .diamond{width:26px; height:26px; transform:rotate(45deg); border:2px solid var(--magenta); background:#fff; flex-shrink:0; margin-left:0.1rem;}
+  .decision .q{font-weight:500; font-size:0.95rem; flex:1; min-width:200px;}
+  .decision .no{font-size:0.8rem; color:var(--magenta); width:100%; padding-left:2.4rem; margin-top:-0.4rem;}
+
+  /* ---------- Conceptos ---------- */
+  .concepts{display:grid; grid-template-columns:repeat(auto-fill, minmax(290px,1fr)); gap:1rem;}
+  .concept{background:#fff; border:1px solid var(--paper-line); padding:1.2rem 1.2rem 1.3rem; border-radius:var(--radius); scroll-margin-top:4rem;}
+  .concept h3{margin:0 0 0.4rem; font-size:1.1rem;}
+  .concept p{margin:0 0 0.7rem; font-size:0.9rem;}
+  .concept dl{margin:0; font-size:0.86rem;}
+  .concept dt{font-weight:500; margin-top:0.6rem;}
+  .concept dd{margin:0.15rem 0 0; color:var(--ink-soft);}
+  .concept .ask{margin-top:0.9rem; padding-top:0.7rem; border-top:1px dashed var(--paper-line); font-size:0.88rem;}
+
+  /* ---------- Plantilla ---------- */
+  .plantilla{display:grid; grid-template-columns:minmax(260px, 360px) 1fr; gap:2rem; align-items:start;}
+  .plantilla svg{width:100%; height:auto; background:#fff; border:1px solid var(--paper-line);}
+  table{border-collapse:collapse; width:100%; font-size:0.88rem; background:#fff;}
+  th, td{border:1px solid var(--paper-line); padding:0.5rem 0.6rem; text-align:left; vertical-align:top;}
+  th{background:#f3f1ea; font-weight:500;}
+  .tablewrap{overflow-x:auto;}
+  .calc{margin-top:1.4rem; padding:1rem 1.1rem; border:1px solid var(--ink); background:#fff;}
+  .calc label{font-size:0.85rem; display:block; margin-bottom:0.4rem;}
+  .calc .row{display:flex; gap:0.8rem; align-items:center; flex-wrap:wrap;}
+  .calc input{width:110px; padding:0.5rem; border:1px solid var(--paper-line); font:inherit;}
+  .calc output{font-size:1.25rem; font-weight:700;}
+  .calc .err{color:var(--magenta); font-size:0.8rem; margin-top:0.4rem; min-height:1em;}
+  ul.plain{padding-left:1.1rem; margin:0.6rem 0; font-size:0.92rem;}
+  ul.plain li{margin-bottom:0.35rem;}
+  .swatch{display:inline-block; width:14px; height:14px; border:1px solid var(--ink); vertical-align:-2px; margin-right:0.4rem;}
+
+  .actions{display:flex; gap:0.6rem; flex-wrap:wrap; margin-top:1.2rem;}
+  .btn{padding:0.6rem 1rem; border:1px solid var(--ink); background:#fff; cursor:pointer; border-radius:var(--radius); font-size:0.9rem;}
+  .btn:hover{background:var(--ink); color:#fff;}
+  .btn.primary{background:var(--ink); color:#fff;}
+  .btn.primary:hover{background:var(--magenta); border-color:var(--magenta);}
+
+  /* ---------- Errores comunes ---------- */
+  .pitfalls{display:grid; grid-template-columns:repeat(auto-fill, minmax(240px,1fr)); gap:1rem;}
+  .pitfall{border-left:3px solid var(--magenta); padding:0.2rem 0 0.2rem 0.9rem;}
+  .pitfall strong{display:block; margin-bottom:0.2rem;}
+  .pitfall span{font-size:0.88rem; color:var(--ink-soft);}
+
+  /* ---------- Rúbrica ---------- */
+  .modes{display:inline-flex; border:1px solid var(--ink); margin-bottom:1.2rem;}
+  .modes button{padding:0.55rem 1.1rem; background:#fff; border:none; cursor:pointer; font-size:0.9rem;}
+  .modes button[aria-pressed="true"]{background:var(--ink); color:#fff;}
+  .fields{display:grid; grid-template-columns:repeat(auto-fill, minmax(220px,1fr)); gap:0.9rem; margin-bottom:1.4rem;}
+  .fields label{display:block; font-size:0.78rem; color:var(--ink-soft); margin-bottom:0.3rem;}
+  .fields input, .fields select{width:100%; padding:0.55rem 0.6rem; border:1px solid var(--paper-line); font:inherit; background:#fff; border-radius:var(--radius);}
+  .crit{background:#fff; border:1px solid var(--paper-line); padding:1rem 1.1rem; margin-bottom:0.8rem; border-radius:var(--radius);}
+  .crit.missing{border-color:var(--magenta);}
+  .crit header{display:flex; justify-content:space-between; gap:1rem; align-items:baseline; flex-wrap:wrap;}
+  .crit h3{margin:0; font-size:1rem;}
+  .crit .pts{font-size:0.78rem; color:var(--ink-soft);}
+  .levels{display:grid; grid-template-columns:repeat(4, 1fr); gap:0.5rem; margin-top:0.8rem;}
+  .level{position:relative;}
+  .level input{position:absolute; opacity:0; pointer-events:none;}
+  .level label{display:block; height:100%; border:1px solid var(--paper-line); padding:0.6rem 0.65rem; cursor:pointer; font-size:0.8rem; border-radius:var(--radius);}
+  .level label b{display:block; font-weight:500; font-size:0.85rem; margin-bottom:0.2rem;}
+  .level label:hover{border-color:var(--ink);}
+  .level input:checked + label{border-color:var(--ink); background:var(--ink); color:#fff;}
+  .level input:focus-visible + label{outline:2px solid var(--cyan); outline-offset:2px;}
+
+  .scoreboard{position:sticky; bottom:0; background:var(--paper); border-top:1px solid var(--ink); padding:0.8rem 0; margin-top:1rem; display:flex; gap:1.6rem; flex-wrap:wrap; align-items:center; z-index:10;}
+  .scoreboard div{font-size:0.8rem; color:var(--ink-soft);}
+  .scoreboard strong{display:block; font-size:1.35rem; color:var(--ink);}
+  .form-error{color:var(--magenta); font-size:0.85rem; min-height:1.2em; margin-top:0.6rem;}
+  .storage-warning{color:var(--magenta); font-size:0.82rem; margin-top:0.5rem; display:none;}
+
+  .report{margin-top:1.8rem; background:#fff; border:1px solid var(--ink); padding:1.5rem 1.4rem; display:none;}
+  .report.show{display:block;}
+  .report h3{margin:0 0 0.2rem; font-size:1.3rem;}
+  .report .grade{display:flex; gap:2rem; flex-wrap:wrap; margin:1.1rem 0; padding:1rem 0; border-top:1px solid var(--paper-line); border-bottom:1px solid var(--paper-line);}
+  .report .grade div{font-size:0.8rem; color:var(--ink-soft);}
+  .report .grade strong{display:block; font-size:1.9rem; color:var(--ink); line-height:1.1;}
+  .report h4{margin:1.2rem 0 0.4rem; font-size:0.95rem;}
+  .report ul{margin:0.3rem 0; padding-left:1.1rem; font-size:0.92rem;}
+  .report li{margin-bottom:0.4rem;}
+  .report .msg{font-size:1rem; margin:0.4rem 0 0;}
+  .report table{margin-top:0.6rem; font-size:0.82rem;}
+
+  footer{text-align:center; font-size:0.78rem; color:var(--ink-soft); padding:2rem 1.5rem 3rem;}
+
+  @media (max-width:760px){
+    .plantilla{grid-template-columns:1fr;}
+    .levels{grid-template-columns:repeat(2, 1fr);}
+    .node{margin-left:0.6rem; padding-left:1.5rem;}
+  }
+  @media (max-width:420px){
+    .landbar{grid-template-columns:repeat(3,1fr);}
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{transition:none !important; scroll-behavior:auto !important;}
+  }
+  @media print{
+    .statusbar, nav.index, .actions, .modes, .scoreboard, .form-error, .storage-warning, footer{display:none !important;}
+    body{background:#fff;}
+    body.print-only section, body.print-only header.hero{display:none;}
+    body.print-only section.printing{display:block;}
+    body.print-only section.printing > *:not(.print-target){display:none;}
+    .report{border:none; padding:0;}
+    .step .body{display:block;}
+    .crit, .step, .concept{break-inside:avoid;}
+  }
+</style>
+</head>
+<body>
+
+<div class="statusbar">
+  <a href="../index.html">Volver a las fichas</a>
+  <span class="who" id="statusText">Sin registro</span>
+</div>
+
+<header class="hero">
+  <h1>Set de tierras básicas: paisajes locales</h1>
+  <p class="sub">Vas a diseñar una carta de tierra básica en una cartulina de 50 × 65 cm, inspirada en un paisaje real de Jalisco. Tu equipo formará un set de 5 cartas que se lean como parte de un juego real. Usa esta página como mapa durante las 6 sesiones.</p>
+  <div class="landbar" aria-hidden="true">
+    <div class="lw"><span class="mono">Llanura</span></div>
+    <div class="lu"><span class="mono">Isla</span></div>
+    <div class="lb"><span class="mono">Pantano</span></div>
+    <div class="lr"><span class="mono">Montaña</span></div>
+    <div class="lg"><span class="mono">Bosque</span></div>
+  </div>
+</header>
+
+<nav class="index" aria-label="Secciones">
+  <ul>
+    <li><a href="#flujo">Flujograma</a></li>
+    <li><a href="#conceptos">Conceptos</a></li>
+    <li><a href="#plantilla">Plantilla</a></li>
+    <li><a href="#tierras">Tierras</a></li>
+    <li><a href="#errores">Errores comunes</a></li>
+    <li><a href="#rubrica">Rúbrica</a></li>
+  </ul>
+</nav>
+
+<main>
+
+  <!-- ================= FLUJOGRAMA ================= -->
+  <section id="flujo">
+    <h2>Flujograma del proyecto</h2>
+    <p class="lead">Toca cada sesión para ver qué hacer. Marca los pasos que termines: tu avance se guarda en este dispositivo, identificado con tu nombre. Los rombos son revisiones; si la respuesta es no, regresa y corrige antes de avanzar.</p>
+    <div class="progress">
+      <div class="track"><div class="fill" id="progressFill"></div></div>
+      <span id="progressText">0% completado</span>
+    </div>
+    <div class="flow" id="flow"></div>
+  </section>
+
+  <!-- ================= CONCEPTOS ================= -->
+  <section id="conceptos">
+    <h2>Los 5 conceptos de diseño</h2>
+    <p class="lead">Cada concepto tiene su ejemplo en la carta que recibiste y una pregunta para revisar tu propio diseño.</p>
+    <div class="concepts" id="concepts"></div>
+  </section>
+
+  <!-- ================= PLANTILLA ================= -->
+  <section id="plantilla">
+    <h2>Plantilla y medidas</h2>
+    <p class="lead">La carta real mide 63 × 88 mm. En tu cartulina la haremos 7 veces más grande: 44 × 62 cm. Todas las medidas se toman desde la esquina superior izquierda de la carta, no de la cartulina.</p>
+    <div class="plantilla print-target">
+      <svg viewBox="0 0 76 67" role="img" aria-labelledby="svgT">
+        <title id="svgT">Plantilla de la carta con medidas en centímetros</title>
+        <rect x="1" y="1" width="50" height="65" fill="none" stroke="#5b5b5e" stroke-width="0.15" stroke-dasharray="0.8 0.6"/>
+        <rect x="4" y="2.5" width="44" height="62" rx="1.2" fill="#1b1b1d"/>
+        <rect x="6" y="4.5" width="40" height="58" rx="0.6" fill="#2f7d4a"/>
+        <rect x="7" y="5.5" width="38" height="4" rx="0.5" fill="#fff" stroke="#1b1b1d" stroke-width="0.12"/>
+        <text x="8" y="8.3" font-size="1.7" font-family="Space Grotesk, sans-serif">Nombre de la carta</text>
+        <rect x="7.5" y="10" width="37" height="27.5" fill="#f3f1ea" stroke="#1b1b1d" stroke-width="0.12"/>
+        <text x="26" y="24" font-size="1.7" text-anchor="middle" font-family="Space Grotesk, sans-serif">Arte del paisaje</text>
+        <rect x="7" y="38" width="38" height="4" rx="0.5" fill="#fff" stroke="#1b1b1d" stroke-width="0.12"/>
+        <text x="8" y="40.8" font-size="1.4" font-family="Space Grotesk, sans-serif">Tierra básica — Bosque</text>
+        <rect x="41" y="38.75" width="2.5" height="2.5" fill="none" stroke="#1b1b1d" stroke-width="0.12"/>
+        <rect x="7.5" y="42.5" width="37" height="16" fill="#fff" stroke="#1b1b1d" stroke-width="0.12"/>
+        <circle cx="26" cy="50.5" r="5" fill="#2f7d4a" stroke="#1b1b1d" stroke-width="0.12"/>
+        <text x="26" y="61.4" font-size="1" text-anchor="middle" fill="#fff" font-family="JetBrains Mono, monospace">Ilus. Nombre · 01/05 · 2026 · Set</text>
+        <g font-size="1.5" font-family="Space Grotesk, sans-serif" fill="#1b1b1d">
+          <line x1="45" y1="7.5" x2="53" y2="7.5" stroke="#5b5b5e" stroke-width="0.1" stroke-dasharray="0.4 0.3"/><text x="53.5" y="8">Título 38 × 4</text>
+          <line x1="44.5" y1="23.75" x2="53" y2="23.75" stroke="#5b5b5e" stroke-width="0.1" stroke-dasharray="0.4 0.3"/><text x="53.5" y="24.25">Arte 37 × 27.5</text>
+          <line x1="45" y1="40" x2="53" y2="40" stroke="#5b5b5e" stroke-width="0.1" stroke-dasharray="0.4 0.3"/><text x="53.5" y="40.5">Tipo 38 × 4</text>
+          <line x1="31" y1="50.5" x2="53" y2="50.5" stroke="#5b5b5e" stroke-width="0.1" stroke-dasharray="0.4 0.3"/><text x="53.5" y="50">Texto 37 × 16</text><text x="53.5" y="52.2">Símbolo ø 10</text>
+          <line x1="45" y1="61" x2="53" y2="61" stroke="#5b5b5e" stroke-width="0.1" stroke-dasharray="0.4 0.3"/><text x="53.5" y="61.5">Pie 38 × 3.5</text>
+        </g>
+      </svg>
+      <div>
+        <div class="tablewrap">
+          <table>
+            <thead><tr><th>Elemento</th><th>Horizontal (cm)</th><th>Vertical (cm)</th><th>Tamaño (cm)</th></tr></thead>
+            <tbody>
+              <tr><td>Margen de cartulina</td><td>3 por lado</td><td>1.5 arriba y abajo</td><td>Carta de 44 × 62</td></tr>
+              <tr><td>Borde negro</td><td colspan="2">Todo el contorno</td><td>2 de grosor</td></tr>
+              <tr><td>Caja de título</td><td>3 a 41</td><td>3 a 7</td><td>38 × 4</td></tr>
+              <tr><td>Marco del arte</td><td>3.5 a 40.5</td><td>7.5 a 35</td><td>37 × 27.5</td></tr>
+              <tr><td>Línea de tipo</td><td>3 a 41</td><td>35.5 a 39.5</td><td>38 × 4</td></tr>
+              <tr><td>Símbolo de expansión</td><td>37 a 39.5</td><td>36.25 a 38.75</td><td>2.5 × 2.5</td></tr>
+              <tr><td>Caja de texto</td><td>3.5 a 40.5</td><td>40 a 56</td><td>37 × 16</td></tr>
+              <tr><td>Símbolo central</td><td>Centro en 22</td><td>Centro en 48</td><td>Círculo de 10 de diámetro</td></tr>
+              <tr><td>Pie de carta</td><td>3 a 41</td><td>56.5 a 60</td><td>38 × 3.5</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <h3 style="font-size:1rem; margin:1.4rem 0 0.3rem;">Tamaños de letra</h3>
+        <ul class="plain">
+          <li>Nombre de la carta: 2 a 2.2 cm de alto.</li>
+          <li>Línea de tipo: 1.5 a 1.6 cm.</li>
+          <li>Pie de carta: 0.6 a 0.8 cm. Debe leerse a un metro de distancia.</li>
+        </ul>
+        <h3 style="font-size:1rem; margin:1.2rem 0 0.3rem;">Cómo trazar</h3>
+        <ul class="plain">
+          <li>Usa lápiz HB con poca presión: las guías se borran al final.</li>
+          <li>Marca cada medida con un punto en ambos extremos y une los puntos con la regla.</li>
+          <li>Para el círculo, amarra el lápiz a un hilo de 5 cm y fija el otro extremo en el centro.</li>
+        </ul>
+        <div class="calc">
+          <label for="mmIn">Convierte cualquier medida de la carta real: escribe los milímetros</label>
+          <div class="row">
+            <input type="number" id="mmIn" min="0" step="0.5" placeholder="ej. 5">
+            <span>mm reales =</span>
+            <output id="cmOut">— cm</output>
+          </div>
+          <div class="err" id="calcErr"></div>
+        </div>
+        <div class="actions">
+          <button class="btn" type="button" data-print="plantilla">Imprimir plantilla</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= TIERRAS ================= -->
+  <section id="tierras">
+    <h2>Tierras, colores y lugares</h2>
+    <p class="lead">El color del marco y el símbolo le dicen al jugador qué tipo de tierra es sin leer nada. Tu símbolo debe ser tuyo: una versión local del original.</p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Tierra</th><th>Color del marco</th><th>Símbolo original</th><th>Lugares de Jalisco</th><th>Idea de símbolo local</th></tr></thead>
+        <tbody>
+          <tr><td>Llanura</td><td><span class="swatch" style="background:var(--w)"></span>Blanco o crema</td><td>Sol</td><td>Centro de Tlaquepaque, campos agaveros de Tequila</td><td>Planta de agave, arco de portal</td></tr>
+          <tr><td>Isla</td><td><span class="swatch" style="background:var(--u)"></span>Azul</td><td>Gota</td><td>Lago de Chapala, Presa de la Vega</td><td>Ola del lago, pez blanco</td></tr>
+          <tr><td>Pantano</td><td><span class="swatch" style="background:var(--b)"></span>Negro</td><td>Calavera</td><td>Manglar de El Salado en Vallarta</td><td>Raíz de mangle, cocodrilo</td></tr>
+          <tr><td>Montaña</td><td><span class="swatch" style="background:var(--r)"></span>Rojo</td><td>Flama</td><td>Nevado y Volcán de Colima, Barranca de Huentitán</td><td>Perfil del volcán, fumarola</td></tr>
+          <tr><td>Bosque</td><td><span class="swatch" style="background:var(--g)"></span>Verde</td><td>Árbol</td><td>Bosque de la Primavera, Tapalpa</td><td>Hoja de encino, piña de pino</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <h3 style="font-size:1rem; margin:1.6rem 0 0.3rem;">Formato del pie de carta</h3>
+    <p style="margin:0; font-size:0.95rem;"><span class="mono">Ilus. [tu nombre] · [número]/05 · 2026 · [nombre del set]</span></p>
+    <p style="margin:0.4rem 0 0; font-size:0.88rem; color:var(--ink-soft); max-width:62ch;">No copies el copyright de la carta original: tu set es una creación propia, así que lleva el nombre y el símbolo de expansión que diseñe tu equipo.</p>
+  </section>
+
+  <!-- ================= ERRORES COMUNES ================= -->
+  <section id="errores">
+    <h2>Errores comunes</h2>
+    <p class="lead">Revisa esta lista antes de cada revisión del flujograma.</p>
+    <div class="pitfalls">
+      <div class="pitfall"><strong>Medir desde la cartulina</strong><span>Las coordenadas se miden desde la esquina de la carta. Si mides desde el papel, todo queda corrido 3 cm.</span></div>
+      <div class="pitfall"><strong>Título más llamativo que el arte</strong><span>Si lo primero que ves es el nombre, la jerarquía se rompió. Reduce el grosor o el contraste de la letra.</span></div>
+      <div class="pitfall"><strong>Símbolo con demasiados detalles</strong><span>Un buen ícono se reconoce a 3 metros. Si necesitas explicarlo, simplifícalo.</span></div>
+      <div class="pitfall"><strong>Colores que no son de la tierra</strong><span>Un bosque con marco azul confunde al jugador. El marco comunica el tipo antes que el texto.</span></div>
+      <div class="pitfall"><strong>Pie de carta ilegible</strong><span>Letra pequeña no significa letra descuidada. Traza renglones guía de 0.7 cm.</span></div>
+      <div class="pitfall"><strong>Cada quien con su estilo</strong><span>Si las 5 cartas usan letras distintas, no parecen un set. Acuerden el tipo de letra en la sesión 3.</span></div>
+    </div>
+  </section>
+
+  <!-- ================= RÚBRICA ================= -->
+  <section id="rubrica">
+    <h2>Rúbrica de evaluación</h2>
+    <p class="lead">Primero haz tu autoevaluación. Después, un compañero de otro equipo hace la coevaluación en este mismo dispositivo. La página promedia ambas y genera tu retroalimentación.</p>
+
+    <div class="modes" role="group" aria-label="Tipo de evaluación">
+      <button type="button" data-mode="auto" aria-pressed="true">Autoevaluación</button>
+      <button type="button" data-mode="co" aria-pressed="false">Coevaluación</button>
+    </div>
+
+    <div class="fields">
+      <div><label for="fAlumno">Alumno evaluado</label><input id="fAlumno" type="text" autocomplete="off"></div>
+      <div><label for="fGrupo">Grupo</label><input id="fGrupo" type="text" autocomplete="off"></div>
+      <div><label for="fTierra">Tierra que diseñó</label>
+        <select id="fTierra"><option value="">Elige una</option><option>Llanura</option><option>Isla</option><option>Pantano</option><option>Montaña</option><option>Bosque</option></select>
+      </div>
+      <div><label for="fSet">Nombre del set</label><input id="fSet" type="text" autocomplete="off"></div>
+      <div id="evaluadorWrap" style="display:none;"><label for="fEvaluador">Nombre de quien coevalúa</label><input id="fEvaluador" type="text" autocomplete="off"></div>
+    </div>
+
+    <div id="criteria"></div>
+
+    <div class="scoreboard" aria-live="polite">
+      <div>Autoevaluación<strong id="sAuto">—</strong></div>
+      <div>Coevaluación<strong id="sCo">—</strong></div>
+      <div>Promedio<strong id="sProm">—</strong></div>
+      <div>Calificación<strong id="sCal">—</strong></div>
+    </div>
+    <div class="form-error" id="rubricError"></div>
+    <div class="storage-warning" id="storageWarning">⚠️ Este navegador no está guardando tu progreso (modo privado o almacenamiento deshabilitado). Termina la rúbrica en una sola sesión o pide ayuda a tu profesor.</div>
+    <div class="actions">
+      <button class="btn primary" type="button" id="btnFeedback">Generar retroalimentación</button>
+      <button class="btn" type="button" id="btnReset">Borrar evaluación</button>
+    </div>
+
+    <div class="report print-target" id="report" aria-live="polite"></div>
+  </section>
+
+</main>
+
+<footer>Tecnología · Diseño gráfico, 3er grado</footer>
+
+<script>
+/* =========================================================
+   DATOS DEL PROYECTO
+========================================================= */
+const CONCEPTOS = [
+  { id:"layout", nombre:"Layout (retícula)",
+    def:"Estructura invisible que ordena texto, imágenes e íconos en un espacio para que la información sea clara.",
+    carta:"Título arriba, arte al centro, línea de tipo, caja de texto con símbolo y pie de carta. Las 5 tierras comparten exactamente la misma retícula.",
+    otro:"La portada de un periódico o la pantalla de Spotify.",
+    pregunta:"¿Tus cajas miden lo que marca la tabla y están alineadas entre sí?" },
+  { id:"jerarquia", nombre:"Jerarquía visual",
+    def:"Orden en que el ojo lee los elementos. Se controla con tamaño, contraste, color y posición.",
+    carta:"Primero el arte (lo más grande), luego el nombre (arriba a la izquierda) y al final el símbolo central.",
+    otro:"En un cartel de cine ves primero el título o el rostro del protagonista y al final los créditos.",
+    pregunta:"A 2 metros, ¿qué ve primero una persona en tu carta?" },
+  { id:"iconografia", nombre:"Iconografía y simbología",
+    def:"Síntesis de una idea compleja en una forma simple que se reconoce sin leer.",
+    carta:"El sol de la llanura o la gota de la isla. También el símbolo de expansión junto a la línea de tipo.",
+    otro:"Las señales de tránsito o la lupa de búsqueda en las apps.",
+    pregunta:"¿Tu símbolo se reconoce en 3 segundos y representa tu lugar?" },
+  { id:"color", nombre:"Codificación de color",
+    def:"Uso del color como código: cada color significa una categoría y el usuario lo aprende.",
+    carta:"Marco crema para llanura, azul para isla, negro para pantano, rojo para montaña y verde para bosque.",
+    otro:"Las líneas del metro o del tren ligero: cada color es una ruta.",
+    pregunta:"¿Alguien podría adivinar tu tipo de tierra tapando el texto?" },
+  { id:"tipografia", nombre:"Tipografía y micro-tipografía",
+    def:"Elegir y organizar letras según su función: llamativas para títulos, legibles en tamaño pequeño para datos.",
+    carta:"El nombre usa una letra con remates de estilo clásico; el pie usa letra diminuta para ilustrador, número y año.",
+    otro:"La etiqueta de un champú: marca grande y estilizada, ingredientes pequeños y neutros.",
+    pregunta:"¿Tu pie de carta se lee a un metro y usa la misma letra que el resto del set?" }
+];
+
+const FLUJO = [
+  { fase:"Fase 1. Análisis del referente" },
+  { id:"s1", n:1, titulo:"Copiado y reconocimiento", color:"var(--cyan)",
+    obj:"Descubrir la retícula de una carta real copiándola a escala.",
+    pasos:["Recibe el set de 5 tierras de tu equipo.",
+           "Elige una carta y cópiala en tu cuaderno a escala 2:1 (12.6 × 17.6 cm).",
+           "Mide cada caja con regla antes de dibujarla.",
+           "Dibuja las otras 4 cartas como miniaturas: solo el color del marco y el símbolo."],
+    tip:"Si tu copia no se parece a la carta, casi siempre es una medida mal tomada, no el dibujo. Mide dos veces.",
+    tags:["layout"] },
+  { id:"s2", n:2, titulo:"Identificación y asignación", color:"var(--cyan)",
+    obj:"Nombrar cada elemento de diseño de la carta y elegir tu paisaje.",
+    pasos:["Etiqueta con flechas cada elemento de tu copia y escribe a qué concepto pertenece.",
+           "Llena en equipo la tabla comparativa de las 5 tierras (color, símbolo, qué se ve primero, qué es igual en todas).",
+           "Elige qué tierra diseñarás y qué lugar real de Jalisco la representa.",
+           "De tarea: consigue 2 o 3 fotos de referencia de tu lugar."],
+    tip:"Revisa la sección Tierras para ver ejemplos de lugares y símbolos.",
+    tags:["layout","jerarquia","iconografia","color","tipografia"] },
+  { decision:"¿Tienes la tabla completa, tu lugar elegido y tus fotos?", no:"No: termínalo antes de la sesión 3. Sin referencias no hay ilustración." },
+  { fase:"Fase 2. Diseño del set" },
+  { id:"s3", n:3, titulo:"Retícula en la cartulina", color:"var(--magenta)",
+    obj:"Trazar la plantilla completa con medidas exactas.",
+    pasos:["Marca los márgenes: 3 cm a los lados y 1.5 cm arriba y abajo.",
+           "Traza el contorno de la carta (44 × 62 cm) y el borde de 2 cm.",
+           "Traza todas las cajas usando la tabla de coordenadas.",
+           "Pide a tu pareja que revise tus medidas con regla.",
+           "En equipo, acuerden el nombre del set, el tipo de letra y el símbolo de expansión."],
+    tip:"Todas las coordenadas se miden desde la esquina de la carta. Usa la calculadora de la sección Plantilla para cualquier detalle extra.",
+    tags:["layout"] },
+  { decision:"¿Cada caja mide lo correcto, con menos de 0.5 cm de diferencia?", no:"No: corrige antes de dibujar. El error se nota más cuando ya hay color." },
+  { id:"s4", n:4, titulo:"Ilustración y jerarquía", color:"var(--magenta)",
+    obj:"Dibujar el paisaje y comprobar el orden de lectura.",
+    pasos:["Boceta tu paisaje dentro del marco del arte usando tus fotos.",
+           "Escribe el título (2 cm de alto) y la línea de tipo (1.5 cm) a lápiz.",
+           "Intercambia cartulina con un compañero y obsérvenla a 2 metros.",
+           "Anota qué se ve primero, segundo y tercero."],
+    tip:"El arte debe ganar por tamaño y color; el título, por posición. Si el título compite con el arte, hazlo más delgado, no más pequeño.",
+    tags:["jerarquia","tipografia"] },
+  { decision:"¿Se ve primero el arte, luego el título y después el símbolo?", no:"No: ajusta tamaño o contraste del elemento que se adelanta." },
+  { id:"s5", n:5, titulo:"Color e iconografía", color:"var(--yellow)",
+    obj:"Codificar la tierra con color y crear tu símbolo propio.",
+    pasos:["Pinta el marco con el color de tu tierra.",
+           "Diseña tu símbolo propio dentro del círculo de 10 cm.",
+           "Colorea el arte del paisaje.",
+           "Junten las 5 cartulinas del equipo y compárenlas."],
+    tip:"Haz tres versiones rápidas de tu símbolo en el cuaderno y quédate con la más simple.",
+    tags:["color","iconografia"] },
+  { decision:"¿Las 5 cartas se leen como un solo set?", no:"No: unifiquen tipo de letra, retícula y símbolo de expansión." },
+  { id:"s6", n:6, titulo:"Micro-tipografía y galería", color:"var(--key)",
+    obj:"Terminar los detalles, presentar el set y evaluarlo.",
+    pasos:["Repasa todo con marcador negro y borra las guías de lápiz.",
+           "Escribe el pie de carta con el formato de la sección Tierras.",
+           "Monten su set en la Galería del Plano Local.",
+           "Presenten en 3 minutos cómo aplicaron los 5 conceptos.",
+           "Completa la autoevaluación y la coevaluación en la rúbrica."],
+    tip:"Traza dos renglones guía de 0.7 cm para el pie de carta: así la letra pequeña queda pareja.",
+    tags:["tipografia"] }
+];
+
+const NIVELES = [
+  { key:"E", nombre:"Excelente", pct:1.0 },
+  { key:"B", nombre:"Bueno", pct:0.8 },
+  { key:"S", nombre:"Suficiente", pct:0.6 },
+  { key:"M", nombre:"Por mejorar", pct:0.4 }
+];
+
+const CRITERIOS = [
+  { id:"analisis", nombre:"Análisis en cuaderno", pts:15,
+    desc:["Copia a escala exacta y todos los elementos etiquetados con su concepto.",
+          "Copia a escala con pequeños errores; casi todos los elementos etiquetados.",
+          "Copia sin medir o incompleta; algunos elementos etiquetados.",
+          "Sin copia o sin identificar los elementos."],
+    fuerte:"Tu análisis del referente es sólido: entendiste la carta antes de diseñar la tuya.",
+    mejora:"Regresa a tu copia del cuaderno y etiqueta los elementos que falten; ese análisis es la base del resto del proyecto." },
+  { id:"layout", nombre:"Layout y retícula", pts:15,
+    desc:["Todas las cajas con medidas correctas y alineadas.",
+          "Una o dos cajas con diferencias menores a 1 cm.",
+          "Varias cajas desalineadas o fuera de medida.",
+          "Sin retícula visible o sin respetar la plantilla."],
+    fuerte:"Tu retícula es precisa; eso hace que tu carta se vea profesional.",
+    mejora:"Revisa tus medidas con la tabla de coordenadas y recuerda medir desde la esquina de la carta, no de la cartulina." },
+  { id:"jerarquia", nombre:"Jerarquía visual", pts:15,
+    desc:["Se lee claramente: arte, título y símbolo, en ese orden.",
+          "El orden funciona pero dos elementos compiten.",
+          "Cuesta saber qué mirar primero.",
+          "Ningún elemento destaca o el orden está invertido."],
+    fuerte:"El orden de lectura de tu carta es claro: guía bien la mirada.",
+    mejora:"Observa tu carta a 2 metros. Si algo se adelanta al arte, reduce su tamaño, grosor o contraste." },
+  { id:"iconografia", nombre:"Iconografía", pts:15,
+    desc:["Símbolo propio, simple y claramente ligado al lugar.",
+          "Símbolo propio pero con detalles de más.",
+          "Símbolo copiado del original o poco relacionado con el lugar.",
+          "Sin símbolo o irreconocible."],
+    fuerte:"Tu símbolo sintetiza bien tu lugar: se reconoce rápido.",
+    mejora:"Simplifica tu símbolo: quita detalles hasta que se reconozca en 3 segundos y conecte con tu paisaje." },
+  { id:"color", nombre:"Codificación de color", pts:10,
+    desc:["Marco del color correcto y coherente con el set.",
+          "Color correcto con acabado irregular.",
+          "Color con otro tono o mezclado con colores de otra tierra.",
+          "Color que no corresponde a la tierra."],
+    fuerte:"El color de tu marco comunica tu tipo de tierra sin necesidad de leer.",
+    mejora:"Revisa la tabla de colores: el marco debe decir el tipo de tierra antes que el texto." },
+  { id:"tipografia", nombre:"Tipografía y micro-tipografía", pts:15,
+    desc:["Título a la altura indicada y pie de carta legible a 1 m.",
+          "Buen título; pie legible pero irregular.",
+          "Letras de tamaños inconsistentes o pie difícil de leer.",
+          "Sin pie de carta o texto ilegible."],
+    fuerte:"Tu tipografía está cuidada: el título se lee de lejos y el pie de carta está limpio.",
+    mejora:"Traza renglones guía para el título (2 cm) y para el pie de carta (0.7 cm) y repasa con marcador de punta fina." },
+  { id:"set", nombre:"Presentación y coherencia del set", pts:15,
+    desc:["Las 5 cartas se leen como un set y la exposición explica los 5 conceptos.",
+          "Set coherente; la exposición explica algunos conceptos.",
+          "Cartas con estilos distintos o exposición muy breve.",
+          "Set incompleto o sin exposición."],
+    fuerte:"Tu equipo logró un set coherente y supo explicar sus decisiones de diseño.",
+    mejora:"Pónganse de acuerdo en tipo de letra, estilo de ilustración y símbolo de expansión, y practiquen explicar cada concepto con su carta." }
+];
+
+const LS_ALUMNO = "tecnologia_alumno";
+
+/* -----------------------------------------------------------
+   CORRECCIÓN: namespacing de localStorage por alumno.
+   Antes, "tierras_checklist" y "tierras_rubrica" eran claves
+   fijas y globales — si dos alumnos usaban la misma
+   computadora, el segundo sobrescribía el progreso del primero.
+   Ahora cada clave incluye el nombre y grupo del alumno
+   registrado en la página principal (tecnologia_alumno).
+----------------------------------------------------------- */
+function storageDisponible(){
+  try{
+    const k = "__test__";
+    localStorage.setItem(k, "1");
+    localStorage.removeItem(k);
+    return true;
+  }catch(e){ return false; }
+}
+const STORAGE_OK = storageDisponible();
+if(!STORAGE_OK){
+  const w = document.getElementById("storageWarning");
+  if(w) w.style.display = "block";
+}
+
+function claveAlumno(base){
+  const a = lsGet(LS_ALUMNO, null);
+  const id = (a && a.nombre) ? `${a.nombre}_${a.grupo || ""}`.trim().replace(/\s+/g, "_") : "sin_registro";
+  return `${base}_${id}`;
+}
+
+function lsGet(key, fallback){
+  try{ const raw = localStorage.getItem(key); return raw ? JSON.parse(raw) : fallback; }
+  catch(e){ return fallback; }
+}
+function lsSet(key, value){
+  try{ localStorage.setItem(key, JSON.stringify(value)); }catch(e){}
+}
+function esc(s){
+  return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+
+/* =========================================================
+   ALUMNO REGISTRADO (misma clave que la página principal)
+========================================================= */
+const alumno = lsGet(LS_ALUMNO, null);
+const statusText = document.getElementById("statusText");
+if(alumno && alumno.nombre){
+  statusText.innerHTML = `<strong>${esc(alumno.nombre)}</strong> · Grupo ${esc(alumno.grupo || "")}`;
+}
+
+/* =========================================================
+   FLUJOGRAMA
+========================================================= */
+const checks = lsGet(claveAlumno("tierras_checklist"), {});
+const flow = document.getElementById("flow");
+const conceptName = Object.fromEntries(CONCEPTOS.map(c => [c.id, c.nombre]));
+
+function renderFlow(){
+  let html = `<div class="node terminal first"><span class="dot"></span><div class="pill">Inicio: recibe tu set de 5 tierras</div></div>`;
+  FLUJO.forEach(item => {
+    if(item.fase){
+      html += `<div class="node"><div class="phase mono">${item.fase}</div></div>`;
+    }else if(item.decision){
+      html += `<div class="node"><div class="decision"><span class="diamond" aria-hidden="true"></span><span class="q">${item.decision}</span><span class="no">${item.no}</span></div></div>`;
+    }else{
+      const lista = item.pasos.map((p, i) => {
+        const k = `${item.id}_${i}`;
+        return `<label class="check"><input type="checkbox" data-k="${k}" ${checks[k] ? "checked" : ""}><span>${p}</span></label>`;
+      }).join("");
+      const tags = item.tags.map(t => `<a href="#c-${t}">${conceptName[t]}</a>`).join("");
+      html += `
+      <div class="node" id="node-${item.id}"><span class="dot"></span>
+        <div class="step" id="step-${item.id}">
+          <div class="tab" style="background:${item.color}"></div>
+          <button type="button" aria-expanded="false" aria-controls="body-${item.id}">
+            <span><span class="meta mono">Sesión ${item.n} de 6</span><h3>${item.titulo}</h3></span>
+            <span class="count" id="count-${item.id}"></span>
+          </button>
+          <div class="body" id="body-${item.id}">
+            <p class="obj"><strong>Objetivo:</strong> ${item.obj}</p>
+            <h4>Pasos</h4>
+            ${lista}
+            <div class="tip"><strong>Consejo:</strong> ${item.tip}</div>
+            <div class="tags">${tags}</div>
+          </div>
+        </div>
+      </div>`;
+    }
+  });
+  html += `<div class="node terminal last"><span class="dot"></span><div class="pill">Fin: set terminado y evaluado</div></div>`;
+  flow.innerHTML = html;
+
+  flow.querySelectorAll(".step > button").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const step = btn.parentElement;
+      const open = step.classList.toggle("open");
+      btn.setAttribute("aria-expanded", open);
+    });
+  });
+  flow.querySelectorAll("input[type=checkbox]").forEach(cb => {
+    cb.addEventListener("change", () => {
+      checks[cb.dataset.k] = cb.checked;
+      lsSet(claveAlumno("tierras_checklist"), checks);
+      updateProgress();
+    });
+  });
+  updateProgress();
+}
+
+function updateProgress(){
+  let total = 0, done = 0;
+  FLUJO.filter(f => f.id).forEach(item => {
+    const hechos = item.pasos.filter((_, i) => checks[`${item.id}_${i}`]).length;
+    total += item.pasos.length; done += hechos;
+    document.getElementById(`count-${item.id}`).textContent = `${hechos}/${item.pasos.length}`;
+    document.getElementById(`node-${item.id}`).classList.toggle("done", hechos === item.pasos.length);
+  });
+  const pct = total ? Math.round(done / total * 100) : 0;
+  document.getElementById("progressFill").style.width = pct + "%";
+  document.getElementById("progressText").textContent = `${pct}% completado`;
+}
+renderFlow();
+
+/* Abre la primera sesión pendiente */
+(function openNext(){
+  const next = FLUJO.find(f => f.id && f.pasos.some((_, i) => !checks[`${f.id}_${i}`]));
+  if(next){
+    const step = document.getElementById(`step-${next.id}`);
+    step.classList.add("open");
+    step.querySelector("button").setAttribute("aria-expanded", "true");
+  }
+})();
+
+/* =========================================================
+   CONCEPTOS
+========================================================= */
+document.getElementById("concepts").innerHTML = CONCEPTOS.map(c => `
+  <article class="concept" id="c-${c.id}">
+    <h3>${c.nombre}</h3>
+    <p>${c.def}</p>
+    <dl>
+      <dt>En la carta</dt><dd>${c.carta}</dd>
+      <dt>En otros productos</dt><dd>${c.otro}</dd>
+    </dl>
+    <div class="ask"><strong>Revisa tu diseño:</strong> ${c.pregunta}</div>
+  </article>`).join("");
+
+/* =========================================================
+   CALCULADORA DE ESCALA 7:1
+========================================================= */
+const mmIn = document.getElementById("mmIn");
+const cmOut = document.getElementById("cmOut");
+const calcErr = document.getElementById("calcErr");
+mmIn.addEventListener("input", () => {
+  calcErr.textContent = "";
+  if(mmIn.value === ""){ cmOut.textContent = "— cm"; return; }
+  const v = parseFloat(mmIn.value);
+  if(isNaN(v) || v < 0){ cmOut.textContent = "— cm"; calcErr.textContent = "Escribe una medida positiva en milímetros."; return; }
+  if(v > 88){ calcErr.textContent = "La carta real mide máximo 88 mm; revisa tu medida."; }
+  cmOut.textContent = (Math.round(v * 0.7 * 10) / 10) + " cm";
+});
+
+/* =========================================================
+   RÚBRICA
+========================================================= */
+const rub = lsGet(claveAlumno("tierras_rubrica"), { info:{}, auto:{}, co:{}, evaluador:"" });
+let mode = "auto";
+const critBox = document.getElementById("criteria");
+
+critBox.innerHTML = CRITERIOS.map(c => `
+  <div class="crit" id="crit-${c.id}">
+    <header><h3>${c.nombre}</h3><span class="pts mono">${c.pts} puntos</span></header>
+    <div class="levels" role="radiogroup" aria-label="${c.nombre}">
+      ${NIVELES.map((n, i) => `
+        <div class="level">
+          <input type="radio" name="r-${c.id}" id="r-${c.id}-${n.key}" value="${n.key}">
+          <label for="r-${c.id}-${n.key}"><b>${n.nombre} · ${Math.round(c.pts * n.pct * 10) / 10}</b>${c.desc[i]}</label>
+        </div>`).join("")}
+    </div>
+  </div>`).join("");
+
+const fields = { alumno:"fAlumno", grupo:"fGrupo", tierra:"fTierra", set:"fSet" };
+Object.entries(fields).forEach(([k, id]) => {
+  const el = document.getElementById(id);
+  el.value = rub.info[k] || "";
+  el.addEventListener("input", () => { rub.info[k] = el.value.trim(); lsSet(claveAlumno("tierras_rubrica"), rub); });
+});
+if(!rub.info.alumno && alumno && alumno.nombre){
+  document.getElementById("fAlumno").value = alumno.nombre;
+  document.getElementById("fGrupo").value = alumno.grupo || "";
+  rub.info.alumno = alumno.nombre; rub.info.grupo = alumno.grupo || "";
+}
+const fEval = document.getElementById("fEvaluador");
+fEval.value = rub.evaluador || "";
+fEval.addEventListener("input", () => { rub.evaluador = fEval.value.trim(); lsSet(claveAlumno("tierras_rubrica"), rub); });
+
+function loadMode(){
+  CRITERIOS.forEach(c => {
+    const val = rub[mode][c.id];
+    document.querySelectorAll(`input[name="r-${c.id}"]`).forEach(r => { r.checked = r.value === val; });
+    document.getElementById(`crit-${c.id}`).classList.remove("missing");
+  });
+  document.getElementById("evaluadorWrap").style.display = mode === "co" ? "block" : "none";
+  document.querySelectorAll(".modes button").forEach(b => b.setAttribute("aria-pressed", b.dataset.mode === mode));
+  document.getElementById("rubricError").textContent = "";
+}
+
+document.querySelectorAll(".modes button").forEach(b => {
+  b.addEventListener("click", () => { mode = b.dataset.mode; loadMode(); });
+});
+
+critBox.addEventListener("change", e => {
+  if(e.target.type !== "radio") return;
+  const id = e.target.name.slice(2);
+  rub[mode][id] = e.target.value;
+  document.getElementById(`crit-${id}`).classList.remove("missing");
+  document.getElementById("rubricError").textContent = "";
+  lsSet(claveAlumno("tierras_rubrica"), rub);
+  updateScores();
+});
+
+const pctOf = key => (NIVELES.find(n => n.key === key) || {}).pct;
+function isComplete(set){ return CRITERIOS.every(c => set[c.id]); }
+function total(set){ return CRITERIOS.reduce((s, c) => s + (set[c.id] ? c.pts * pctOf(set[c.id]) : 0), 0); }
+function round1(x){ return Math.round(x * 10) / 10; }
+function calificacion(pts){
+  // Nota: el mínimo de 5.0 es una política de "nunca cero" — cambia el primer
+  // argumento por 0 si prefieres que la calificación refleje el puntaje real sin piso.
+  return Math.max(5, round1(pts / 10));
+}
+
+function updateScores(){
+  const a = isComplete(rub.auto) ? total(rub.auto) : null;
+  const c = isComplete(rub.co) ? total(rub.co) : null;
+  document.getElementById("sAuto").textContent = a !== null ? round1(a) + "/100" : "—";
+  document.getElementById("sCo").textContent = c !== null ? round1(c) + "/100" : "—";
+  if(a !== null && c !== null){
+    const p = (a + c) / 2;
+    document.getElementById("sProm").textContent = round1(p) + "/100";
+    document.getElementById("sCal").textContent = calificacion(p).toFixed(1);
+  }else{
+    document.getElementById("sProm").textContent = "—";
+    document.getElementById("sCal").textContent = "—";
+  }
+}
+
+function mensajeGeneral(cal){
+  if(cal >= 9.5) return "Trabajo sobresaliente: tu carta funciona como una pieza de diseño real.";
+  if(cal >= 8.5) return "Muy buen trabajo: dominas la mayoría de los conceptos y tu carta se lee con claridad.";
+  if(cal >= 7.5) return "Buen trabajo: la base está bien construida y con algunos ajustes tu carta dará un salto.";
+  if(cal >= 6) return "Tu carta cumple lo básico. Enfócate en los puntos de mejora para acercarla al formato de un juego real.";
+  return "Tu carta necesita trabajo en varios conceptos. Revisa el flujograma sesión por sesión y pide apoyo a tu profesor.";
+}
+
+function generarReporte(){
+  const err = document.getElementById("rubricError");
+  const faltanAuto = CRITERIOS.filter(c => !rub.auto[c.id]);
+  const faltanCo = CRITERIOS.filter(c => !rub.co[c.id]);
+  if(!rub.info.alumno){ err.textContent = "Escribe el nombre del alumno evaluado."; document.getElementById("fAlumno").focus(); return; }
+  if(faltanAuto.length || faltanCo.length){
+    const faltan = mode === "auto" ? faltanAuto : faltanCo;
+    faltan.forEach(c => document.getElementById(`crit-${c.id}`).classList.add("missing"));
+    const partes = [];
+    if(faltanAuto.length) partes.push(`autoevaluación (${faltanAuto.length} criterios)`);
+    if(faltanCo.length) partes.push(`coevaluación (${faltanCo.length} criterios)`);
+    err.textContent = `Falta completar: ${partes.join(" y ")}.`;
+    return;
+  }
+  err.textContent = "";
+
+  const a = total(rub.auto), c = total(rub.co), p = (a + c) / 2, cal = calificacion(p);
+  const filas = [], fuertes = [], mejoras = [], diferencias = [];
+  CRITERIOS.forEach(cr => {
+    const pa = pctOf(rub.auto[cr.id]), pc = pctOf(rub.co[cr.id]), prom = (pa + pc) / 2;
+    const nA = NIVELES.find(n => n.key === rub.auto[cr.id]).nombre;
+    const nC = NIVELES.find(n => n.key === rub.co[cr.id]).nombre;
+    filas.push(`<tr><td>${cr.nombre}</td><td>${nA}</td><td>${nC}</td><td>${round1(cr.pts * prom)}/${cr.pts}</td></tr>`);
+    if(prom >= 0.9) fuertes.push(cr.fuerte);
+    else if(prom <= 0.7) mejoras.push(`<strong>${cr.nombre}:</strong> ${cr.mejora}`);
+    else mejoras.push(`<strong>${cr.nombre}:</strong> vas bien; para llegar a excelente, ${cr.mejora.charAt(0).toLowerCase() + cr.mejora.slice(1)}`);
+    if(Math.abs(pa - pc) >= 0.4) diferencias.push(cr.nombre);
+  });
+
+  let difHtml = "";
+  if(diferencias.length){
+    difHtml = `<h4>Para platicar con tu compañero</h4><p class="msg" style="font-size:0.92rem;">Ustedes vieron distinto: ${diferencias.join(", ")}. Comparen su carta con la descripción de la rúbrica y lleguen a un acuerdo.</p>`;
+  }
+  const i = rub.info;
+  const report = document.getElementById("report");
+  report.innerHTML = `
+    <h3>Retroalimentación: ${esc(i.alumno)}</h3>
+    <p style="margin:0; color:var(--ink-soft); font-size:0.9rem;">Grupo ${esc(i.grupo || "—")} · Tierra: ${esc(i.tierra || "—")} · Set: ${esc(i.set || "—")}${rub.evaluador ? " · Coevaluó: " + esc(rub.evaluador) : ""}</p>
+    <div class="grade">
+      <div>Autoevaluación<strong>${round1(a)}</strong></div>
+      <div>Coevaluación<strong>${round1(c)}</strong></div>
+      <div>Promedio<strong>${round1(p)}</strong></div>
+      <div>Calificación<strong>${cal.toFixed(1)}</strong></div>
+    </div>
+    <p class="msg">${mensajeGeneral(cal)}</p>
+    ${fuertes.length ? `<h4>Fortalezas</h4><ul>${fuertes.map(f => `<li>${f}</li>`).join("")}</ul>` : ""}
+    ${mejoras.length ? `<h4>Para mejorar</h4><ul>${mejoras.map(m => `<li>${m}</li>`).join("")}</ul>` : ""}
+    ${difHtml}
+    <h4>Detalle por criterio</h4>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Criterio</th><th>Auto</th><th>Co</th><th>Puntos</th></tr></thead>
+      <tbody>${filas.join("")}</tbody>
+    </table></div>
+    <div class="actions">
+      <button class="btn primary" type="button" data-print="rubrica">Imprimir retroalimentación</button>
+      <button class="btn" type="button" id="btnCopy">Copiar texto</button>
+    </div>`;
+  report.classList.add("show");
+  report.scrollIntoView({ behavior:"smooth", block:"start" });
+
+  document.getElementById("btnCopy").addEventListener("click", e => {
+    const txt = report.innerText.replace(/Imprimir retroalimentación\s*Copiar texto\s*$/, "").trim();
+    const done = () => { e.target.textContent = "Texto copiado"; setTimeout(() => e.target.textContent = "Copiar texto", 1800); };
+    if(navigator.clipboard){ navigator.clipboard.writeText(txt).then(done).catch(() => { e.target.textContent = "Selecciona y copia manualmente"; }); }
+    else { e.target.textContent = "Selecciona y copia manualmente"; }
+  });
+}
+
+document.getElementById("btnFeedback").addEventListener("click", generarReporte);
+document.getElementById("btnReset").addEventListener("click", () => {
+  if(!confirm("¿Borrar la autoevaluación, la coevaluación y los datos del evaluado?")) return;
+  rub.info = {}; rub.auto = {}; rub.co = {}; rub.evaluador = "";
+  lsSet(claveAlumno("tierras_rubrica"), rub);
+  Object.values(fields).forEach(id => document.getElementById(id).value = "");
+  fEval.value = "";
+  document.getElementById("report").classList.remove("show");
+  loadMode(); updateScores();
+});
+
+/* =========================================================
+   IMPRESIÓN POR SECCIÓN
+========================================================= */
+document.addEventListener("click", e => {
+  const btn = e.target.closest("[data-print]");
+  if(!btn) return;
+  const sec = document.getElementById(btn.dataset.print);
+  document.body.classList.add("print-only");
+  sec.classList.add("printing");
+  window.print();
+});
+window.addEventListener("afterprint", () => {
+  document.body.classList.remove("print-only");
+  document.querySelectorAll(".printing").forEach(s => s.classList.remove("printing"));
+});
+
+loadMode();
+updateScores();
+</script>
+</body>
+</html>
