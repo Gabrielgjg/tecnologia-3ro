@@ -12,5 +12,5 @@
 const fichasData = [
   { titulo: "Sesión 1 — ¿Qué es el diseño gráfico?", desc: "Actividad de observación y búsqueda de objetos con diseño gráfico.", href: "./sesion-1-que-es-diseno-grafico/" },
   { titulo: "Sesión 2 — Historia y conceptos", desc: "Reporte de lectura y glosario de términos del diseño gráfico.", href: "./sesion-2-historia-conceptos-diseno-grafico/" },
-  { titulo: "Proyecto 1", desc: "Materiales para el proyecto 1", href: "./sesion-2-historia-conceptos-diseno-grafico/" },
+  { titulo: "Proyecto 1", desc: "Materiales para el proyecto 1", href: "./SESION 3 PROYECTO/" },
 ];
